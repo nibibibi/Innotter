@@ -9,9 +9,12 @@ services:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+    healthcheck:
+      test: "exit 0"
   web:
     depends_on:
-        - db
+        db:
+          condition: service_healthy
     build: ./Innotter
     command:  ./Innotter/entrypoint.sh
     volumes:
