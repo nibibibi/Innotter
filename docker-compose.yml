@@ -10,6 +10,8 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
   web:
+    depends_on:
+        - db
     build: ./Innotter
     command:  ./Innotter/entrypoint.sh
     volumes:
@@ -20,5 +22,4 @@ services:
       - POSTGRES_NAME=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-    depends_on:
-      - db
+    
