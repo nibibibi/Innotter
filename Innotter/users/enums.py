@@ -1,7 +1,7 @@
-from enum import Enum
+from django.db import models
 
 
-class RolesEnum(Enum):
+class RolesEnum(models.TextChoices):
     USER = "user"
     MODERATOR = "moderator"
     ADMIN = "admin"
