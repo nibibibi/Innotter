@@ -4,7 +4,7 @@ from enums import RolesEnum
 
 
 class User(AbstractUser):
-    roles = RolesEnum()
+    roles = models.CharField(choices=RolesEnum)
 
     email = models.EmailField(unique=True)
     image_s3_path = models.CharField(max_length=200, null=True, blank=True)
