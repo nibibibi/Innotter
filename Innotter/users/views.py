@@ -3,9 +3,9 @@ from asyncio import exceptions
 import jwt
 from django.conf import settings
 from rest_framework import exceptions
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
 
 from .auth import generate_access_token, generate_refresh_token
 from .models import User
@@ -21,6 +21,7 @@ class UserView(APIView):
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
+
     def post(self, request, format=None):
         username = request.data.get("username")
         password = request.data.get("password")
@@ -50,6 +51,7 @@ class LoginView(APIView):
 
 class RefreshTokenView(APIView):
     permission_classes = [AllowAny]
+
     def post(self, request, format=None):
         refresh_token = request.data.get("refresh_token")
         if refresh_token is None:
