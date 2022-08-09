@@ -9,6 +9,7 @@ psycopg2 = ">=2.8"
 djangorestframework = "*"
 django-cors-headers = "*"
 pyjwt = "*"
+drf-yasg = "*"
 
 [dev-packages]
 isort = "*"

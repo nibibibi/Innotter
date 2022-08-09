@@ -5,6 +5,7 @@ from django.conf import settings
 from rest_framework import exceptions
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
 
 from .auth import generate_access_token, generate_refresh_token
 from .models import User
@@ -19,6 +20,7 @@ class UserView(APIView):
 
 
 class LoginView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request, format=None):
         username = request.data.get("username")
         password = request.data.get("password")
@@ -37,8 +39,8 @@ class LoginView(APIView):
         access_token = generate_access_token(user)
         refresh_token = generate_refresh_token(user)
         response = Response()
-        response.set_cookie(key="refreshtoken", value=refresh_token, httponly=True)
         response.data = {
+            "refresh_token": refresh_token,
             "access_token": access_token,
             "user": serialized_user,
         }
@@ -47,8 +49,9 @@ class LoginView(APIView):
 
 
 class RefreshTokenView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request, format=None):
-        refresh_token = request.COOKIES.get("refreshtoken")
+        refresh_token = request.data.get("refresh_token")
         if refresh_token is None:
             raise exceptions.AuthenticationFailed(
                 "Authentication credentials were not provided."
