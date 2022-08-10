@@ -8,6 +8,8 @@ class PageSerializer(serializers.ModelSerializer):
         model = Page
         fields = "__all__"
 
+    def validate(self, attrs):
+        return attrs
 
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
