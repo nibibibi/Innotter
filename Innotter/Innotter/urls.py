@@ -1,5 +1,3 @@
-from email.mime import base
-
 from django.contrib import admin
 from django.urls import include, path
 

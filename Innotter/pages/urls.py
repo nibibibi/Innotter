@@ -1,7 +1,7 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from pages import views as pages_views
+from . import views as pages_views
 from users import views as users_views
 
 router = DefaultRouter()
