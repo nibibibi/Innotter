@@ -1,6 +1,6 @@
 import jwt
 from django.conf import settings
-from rest_framework import exceptions
+from rest_framework import exceptions, viewsets
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -9,12 +9,16 @@ from .auth import generate_access_token, generate_refresh_token
 from .models import User
 from .serializers import UserSerializer
 
+# class UserView(APIView):
+#     def get(self, request, format=None):
+#         user = request.user
+#         serialized_user = UserSerializer(user).data
+#         return Response({"user": serialized_user})
 
-class UserView(APIView):
-    def get(self, request, format=None):
-        user = request.user
-        serialized_user = UserSerializer(user).data
-        return Response({"user": serialized_user})
+
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
 
 class LoginView(APIView):
