@@ -9,15 +9,11 @@ class Page(models.Model):
     name = models.CharField(max_length=80)
     uuid = models.CharField(max_length=30, unique=True)
     description = models.TextField()
-    tags = models.ManyToManyField(
-        "pages.Tag", related_name="pages", blank=True
-    )
+    tags = models.ManyToManyField("pages.Tag", related_name="pages", blank=True)
     owner = models.ForeignKey(
         "users.User", on_delete=models.CASCADE, related_name="pages"
     )
-    followers = models.ManyToManyField(
-        "users.User", related_name="follows", blank=True
-    )
+    followers = models.ManyToManyField("users.User", related_name="follows", blank=True)
     image = models.URLField(null=True, blank=True)
     is_private = models.BooleanField(default=False)
     follow_requests = models.ManyToManyField(

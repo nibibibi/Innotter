@@ -6,10 +6,11 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from pages.permissons import IsAdminRole
+
 from .auth import generate_access_token, generate_refresh_token
 from .models import User
 from .serializers import RegisterSerializer, UserSerializer
-from pages.permissons import IsAdminRole
 
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):

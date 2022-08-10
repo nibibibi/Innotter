@@ -35,9 +35,6 @@ class RegisterSerializer(serializers.ModelSerializer):
             "role",
         ]
 
-    def validate(self, attrs):
-        return attrs
-
     def create(self, validated_data):
         user = User.objects.create(
             username=validated_data["username"],
