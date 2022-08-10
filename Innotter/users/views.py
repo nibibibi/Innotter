@@ -9,12 +9,6 @@ from .auth import generate_access_token, generate_refresh_token
 from .models import User
 from .serializers import UserSerializer
 
-# class UserView(APIView):
-#     def get(self, request, format=None):
-#         user = request.user
-#         serialized_user = UserSerializer(user).data
-#         return Response({"user": serialized_user})
-
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = User.objects.all()
