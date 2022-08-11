@@ -1,16 +1,20 @@
 import jwt
 from django.conf import settings
 from rest_framework import exceptions, viewsets
+from rest_framework.generics import CreateAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from pages.permissons import IsAdminRole
+
 from .auth import generate_access_token, generate_refresh_token
 from .models import User
-from .serializers import UserSerializer
+from .serializers import RegisterSerializer, UserSerializer
 
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [IsAdminRole]
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
@@ -26,7 +30,7 @@ class LoginView(APIView):
         if password is None:
             raise exceptions.AuthenticationFailed("Password was not provided.")
 
-        user = User.objects.get(username=username)
+        user = User.objects.filter(username=username).first()
         if user is None:
             raise exceptions.AuthenticationFailed("User does not exist.")
         if not user.check_password(password):
@@ -43,6 +47,12 @@ class LoginView(APIView):
         }
 
         return response
+
+
+class RegistrationView(CreateAPIView):
+    permission_classes = [AllowAny]
+    queryset = User.objects.all()
+    serializer_class = RegisterSerializer
 
 
 class RefreshTokenView(APIView):
