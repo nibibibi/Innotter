@@ -15,7 +15,11 @@ class UserSerializer(serializers.ModelSerializer):
             "role",
             "is_blocked",
         ]
-
+        
+class UserAccessSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username', 'is_blocked']
 
 class RegisterSerializer(serializers.ModelSerializer):
     """
