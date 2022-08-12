@@ -1,10 +1,14 @@
 from rest_framework import viewsets
 from ..serializers.page_serializers import PageSerializer
 from ..models import Page
-from ..permissons import IsWelcome, IsOwnerOrReadOnly
+from ..permissons import DictionaryPermissionsMixin, IsNotBlacklisted, IsWelcome
 
 
-class PageViewSetMixin(viewsets.GenericViewSet):
+class PageViewSetMixin(DictionaryPermissionsMixin, viewsets.GenericViewSet):
     serializer_class = PageSerializer
     queryset = Page.objects.all()
-    permission_classes = [IsWelcome, IsOwnerOrReadOnly]
+    permission_classes = {
+        'follow': [IsNotBlacklisted],
+        'unfollow': [IsWelcome]
+    }
+    

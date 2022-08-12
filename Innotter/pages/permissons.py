@@ -47,3 +47,11 @@ class IsAlreadyWelcomed(permissions.BasePermission):
 class IsActiveUser(permissions.BasePermission):
     def has_permission(self, request, view):
         return not request.user.is_blocked
+    
+class IsNotBlacklisted(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return request.user not in obj.blacklisted_users.all()
+    
+class DictionaryPermissionsMixin():
+    def get_permissions(self):
+        return [permission() for permission in self.permission_classes.get(self.action)]

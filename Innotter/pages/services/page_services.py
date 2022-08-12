@@ -11,7 +11,7 @@ def toggle_follow_or_request_invitation(view, request):
         return Response({'status': "user blacklisted"})
     if view.action == 'follow':
         if is_in_followers or is_in_requests:
-            return Response({'status': "is already following"})
+            return Response({'status': "is already following"}) # TODO: replace with permission *
         elif page.is_private:
             page.follow_requests.add(user)
         else:
@@ -24,7 +24,7 @@ def toggle_follow_or_request_invitation(view, request):
         elif is_in_requests:
             page.follow_requests.remove(user)
         else:
-            return Response({'status': "was not following"})
+            return Response({'status': "was not following"}) # TODO: replace with permission
         page.save()
         return Response({'status': "unfollowed"})
     
