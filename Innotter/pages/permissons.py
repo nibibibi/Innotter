@@ -43,3 +43,7 @@ class IsAuthorOrReadOnly(permissions.BasePermission):
 class IsAlreadyWelcomed(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         IsWelcome.has_object_permission(request, view, obj.page)
+
+class IsActiveUser(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return not request.user.is_blocked

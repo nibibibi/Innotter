@@ -1,15 +1,9 @@
-from ..permissons import IsAdminRole
-from users.models import User
-from users.serializers import UserSerializer
-from rest_framework import viewsets
+from ..mixins.user_mixins import UserViewSetMixin
 from rest_framework.decorators import action
 from ..services import user_services
 
 
-class UserViewSet(viewsets.ReadOnlyModelViewSet):
-    permission_classes = [IsAdminRole]
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+class UserViewSet(UserViewSetMixin):
     
     @action(detail=True, methods=['post',])
     def block(self, request, pk=None):
@@ -18,7 +12,3 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=True, methods=['post',])
     def unblock(self, request, pk=None):
         return user_services.toggle_is_blocked(user=self.get_object(), action='unblock')
-        
-        
-        
-        
