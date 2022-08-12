@@ -3,6 +3,7 @@ from users.models import User
 from users.serializers import UserSerializer
 from rest_framework import viewsets
 from rest_framework.decorators import action
+from ..services import user_services
 
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
@@ -10,7 +11,14 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['post',])
     def block(self, request, pk=None):
-        user = self.get_object()
+        return user_services.toggle_is_blocked(self.get_object(), request, 'block')
+    
+    @action(detail=True, methods=['post',])
+    def unblock(self, request, pk=None):
+        return user_services.toggle_is_blocked(self.get_object(), request, 'unblock')
+        
+        
+        
         

@@ -1,6 +1,6 @@
 from ..permissons import IsWelcome, IsOwnerOrReadOnly
 from ..models import Page
-from ..serializers import PageSerializer
+from ..serializers.page_serializers import PageSerializer
 from rest_framework import viewsets
 
 

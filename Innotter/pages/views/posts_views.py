@@ -1,6 +1,6 @@
 from ..permissons import IsAuthorOrReadOnly, IsAlreadyWelcomed
 from ..models import Post
-from ..serializers import PostSerializer
+from ..serializers.posts_serializers import PostSerializer
 from rest_framework import viewsets
 
 
