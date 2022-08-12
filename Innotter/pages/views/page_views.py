@@ -1,22 +1,17 @@
-from ..permissons import IsWelcome, IsOwnerOrReadOnly
-from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import AuthenticationFailed
-from users.models import User
+from ..services.page_services import toggle_follow_or_request_invitation
+from ..mixins.page_mixins import PageViewSetMixin
 
-
-class PageViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsWelcome, IsOwnerOrReadOnly]
+class PageViewSet(PageViewSetMixin):
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
         
-    def list(self, request):
-        pass
+    @action(detail=True, methods=['post','get'])
+    def follow(self, request, pk=None):
+        return toggle_follow_or_request_invitation(view=self, request=request)
     
-    def retrieve(self, request, pk=None):
-        pass
-    
-    @action(detail=True, methods=['post',])
-    def block_until(self, request, pk=None):
-        pass
+    @action(detail=True, methods=['post','get'])
+    def unfollow(self, request, pk=None):
+        return toggle_follow_or_request_invitation(view=self, request=request)
+        
