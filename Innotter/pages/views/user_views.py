@@ -13,11 +13,11 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     
     @action(detail=True, methods=['post',])
     def block(self, request, pk=None):
-        return user_services.toggle_is_blocked(self.get_object(), request, 'block')
+        return user_services.toggle_is_blocked(user=self.get_object(), action='block')
     
     @action(detail=True, methods=['post',])
     def unblock(self, request, pk=None):
-        return user_services.toggle_is_blocked(self.get_object(), request, 'unblock')
+        return user_services.toggle_is_blocked(user=self.get_object(), action='unblock')
         
         
         
