@@ -1,15 +1,20 @@
-from rest_framework import exceptions
-from users.models import User
 from rest_framework.response import Response
 
 
-def toggle_is_blocked(user, action):
-    if user.is_blocked and action == 'block':
-        return Response({'status':'was already blocked'})
-    elif (not user.is_blocked) and (action == 'unblock'):
-        return Response({'status':'was already unblocked'})
+def toggle_block_unblock(view):
+    user_to_block = view.get_object()
+    if user_to_block.is_blocked == False:
+        block_user(user_to_block)
+    else:
+        unblock_user(user_to_block)
+    return Response({'status': "user toggled"})
     
-    user.is_blocked = True if action == 'block' else False
-    user.save()
         
-    return Response({'status': 'user toggled'})
+def block_user(user):
+    user.is_blocked = True
+    user.save()
+    
+def unblock_user(user):
+    user.is_blocked = False
+    user.save()
+    

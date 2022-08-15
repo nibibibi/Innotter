@@ -10,22 +10,17 @@ from django.http import JsonResponse
 
 class UserViewSet(UserViewSetMixin):
     permission_classes = {
-        'block': [IsAdminRole],
-        'unblock': [IsAdminRole],
+        'toggle_block': [IsAdminRole],
         "list_favourites": [IsActiveUser]
     }
     queryset = User.objects.all()
     serializer_class = UserSerializer
     
-    @action(detail=True, methods=['post',])
-    def block(self, request, pk=None):
-        return user_services.toggle_is_blocked(user=self.get_object(), action=self.action)
     
-    @action(detail=True, methods=['post',])
-    def unblock(self, request, pk=None):
-        return user_services.toggle_is_blocked(user=self.get_object(), action=self.action)
+    @action(detail=True, methods=['get'])
+    def toggle_block(self, request, pk=None):
+        return user_services.toggle_block_unblock(view=self)
     
     @action(detail=False, methods=['get'])
     def list_favourites(self, request):
         return JsonResponse(UserFavouritePostsSerializer(request.user).data, status=200)
-        

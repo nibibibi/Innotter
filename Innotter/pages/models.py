@@ -22,9 +22,10 @@ class Page(models.Model):
     )
     unblock_date = models.DateTimeField(null=True, blank=True)
     is_permamently_blocked = models.BooleanField(default=False)
+    blacklisted_users = models.ManyToManyField("users.User", related_name="blacklisted", blank=True)
+   
     def is_blocked_atm(self):
         return not (self.unblock_date == None or datetime.utcnow() > self.unblock_date)
-    blacklisted_users = models.ManyToManyField("users.User", related_name="blacklisted", blank=True)
 
 
 class Post(models.Model):
