@@ -41,7 +41,7 @@ def toggle_page_is_blocked(view, request):
         else:
             page.is_permamently_blocked = False
             page.unblock_date = datetime.utcnow()
-    elif view.actiobn == 'timeblock':
+    elif view.action == 'timeblock':
         pass
     page.save()    
     return Response({'status': "page toggled"})
