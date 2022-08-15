@@ -7,14 +7,14 @@ def toggle_block_unblock(view):
         block_user(user_to_block)
     else:
         unblock_user(user_to_block)
-    return Response({'status': "user toggled"})
-    
-        
+    return Response({"status": "user toggled"})
+
+
 def block_user(user):
     user.is_blocked = True
     user.save()
-    
+
+
 def unblock_user(user):
     user.is_blocked = False
     user.save()
-    

@@ -14,8 +14,9 @@ class UserSerializer(serializers.ModelSerializer):
             "title",
             "role",
             "is_blocked",
+            "favourite_posts",
         ]
-        
+
 
 class RegisterSerializer(serializers.ModelSerializer):
     """

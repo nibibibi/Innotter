@@ -1,6 +1,7 @@
 from rest_framework import viewsets
+
 from ..permissons import DictionaryPermissionsMixin
 
 
-class PageViewSetMixin(DictionaryPermissionsMixin, viewsets.GenericViewSet):
+class PageViewSetMixin(DictionaryPermissionsMixin, viewsets.ModelViewSet):
     pass

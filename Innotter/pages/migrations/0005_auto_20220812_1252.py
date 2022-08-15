@@ -8,18 +8,20 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('pages', '0004_auto_20220810_1347'),
+        ("pages", "0004_auto_20220810_1347"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='page',
-            name='blacklisted_users',
-            field=models.ManyToManyField(blank=True, related_name='blacklisted', to=settings.AUTH_USER_MODEL),
+            model_name="page",
+            name="blacklisted_users",
+            field=models.ManyToManyField(
+                blank=True, related_name="blacklisted", to=settings.AUTH_USER_MODEL
+            ),
         ),
         migrations.AddField(
-            model_name='page',
-            name='is_permamently_blocked',
+            model_name="page",
+            name="is_permamently_blocked",
             field=models.BooleanField(default=False),
         ),
     ]

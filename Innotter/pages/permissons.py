@@ -18,8 +18,12 @@ class IsModeratorRole(permissions.BasePermission):
 class IsWelcome(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         user = request.user
-        if (not obj.is_private or user.role != User.Roles.USER
-            or user in obj.followers.all() or user == obj.owner):
+        if (
+            not obj.is_private
+            or user.role != User.Roles.USER
+            or user in obj.followers.all()
+            or user == obj.owner
+        ):
             return True
         return False
 
@@ -44,14 +48,17 @@ class IsAlreadyWelcomed(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         IsWelcome.has_object_permission(request, view, obj.page)
 
+
 class IsActiveUser(permissions.BasePermission):
     def has_permission(self, request, view):
         return not request.user.is_blocked
-    
+
+
 class IsNotBlacklisted(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return request.user not in obj.blacklisted_users.all()
-    
-class DictionaryPermissionsMixin():
+
+
+class DictionaryPermissionsMixin:
     def get_permissions(self):
         return [permission() for permission in self.permission_classes.get(self.action)]
