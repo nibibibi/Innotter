@@ -1,7 +1,7 @@
 from ssl import DER_cert_to_PEM_cert
 from rest_framework.decorators import action
 
-from ...users.models import User
+from users.models import User
 from ..permissons import IsActiveUser, IsAdminRole, IsAlreadyWelcomed, IsAuthorOrReadOnly, IsModeratorRole
 from ..models import Post
 from ..serializers.post_serializers import PostSerializer
