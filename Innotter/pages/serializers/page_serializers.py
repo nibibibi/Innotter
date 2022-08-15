@@ -1,3 +1,4 @@
+from dataclasses import field
 from rest_framework import serializers
 
 from ..models import Page
@@ -9,13 +10,7 @@ class PageSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class RetrievePageSerializer(serializers.ModelSerializer):
+class TimeBlockPageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Page
-        exclude = ["follow_requests"]
-
-
-class RetrievePrivatePageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Page
-        exclude = ["follow_requests", "followers", "description"]
+        fields = ['unblock_date']

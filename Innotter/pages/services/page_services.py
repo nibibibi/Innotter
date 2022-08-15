@@ -2,6 +2,8 @@ from datetime import datetime
 
 from rest_framework.response import Response
 
+from ..models import Page
+
 
 def toggle_follow_request(view, request):
     user = request.user
@@ -28,21 +30,20 @@ def unfollow_request(user, page):
         page.follow_requests.remove(user)
     page.save()
 
-
-def toggle_page_is_blocked(view, request):
+def toggle_page_permamently_blocked(view, request): # Request may be needed later in case we want to know who blocked the page
     page = view.get_object()
-    if view.action == "permablock":
-        if page.is_permamently_blocked == True:
-            return Response({"status": "was already blocked"})
-        else:
-            page.is_permamently_blocked = True
-    elif view.action == "unblock":
-        if not page.is_blocked_atm() and page.is_permamently_blocked == False:
-            return Response({"status": "was not blocked"})
-        else:
-            page.is_permamently_blocked = False
-            page.unblock_date = datetime.utcnow()
-    elif view.action == "timeblock":
-        pass
+    if page.is_permamently_blocked == True:
+        print("unpermablocking...")
+        unpermablock_page(page=page)
+    else:
+        print("permablocking...")
+        permablock_page(page=page)
+    return Response({'status': "page state toggled"})
+
+def permablock_page(page: Page):
+    page.is_permamently_blocked = True
     page.save()
-    return Response({"status": "page toggled"})
+    
+def unpermablock_page(page: Page):
+    page.is_permamently_blocked = False
+    page.save()
