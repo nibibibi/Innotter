@@ -1,5 +1,5 @@
+from datetime import datetime
 from rest_framework.response import Response
-from users.models import User
 
 
 def toggle_follow_or_request_invitation(view, request):
@@ -28,3 +28,18 @@ def toggle_follow_or_request_invitation(view, request):
         page.save()
         return Response({'status': "unfollowed"})
     
+def toggle_page_is_blocked(view, request):
+    page = view.get_object()
+    if view.action == 'permablock':
+        if page.is_permamently_blocked == True:
+            return Response({'status': "was already blocked"})
+        else:
+            page.is_permamently_blocked = True
+    elif view.action == 'unblock':
+        if not page.is_blocked_atm() and page.is_permamently_blocked == False:
+            return Response({'status': "was not blocked"})
+        else:
+            page.is_permamently_blocked = False
+            page.unblock_date = datetime.utcnow()
+    page.save()    
+    return Response({'status': "page toggled"})
