@@ -1,9 +1,15 @@
 from ..mixins.user_mixins import UserViewSetMixin
 from rest_framework.decorators import action
 from ..services import user_services
+from ..permissons import IsAdminRole
+from users.models import User
+from users.serializers import UserSerializer
 
 
 class UserViewSet(UserViewSetMixin):
+    permission_classes = [IsAdminRole]
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
     
     @action(detail=True, methods=['post',])
     def block(self, request, pk=None):

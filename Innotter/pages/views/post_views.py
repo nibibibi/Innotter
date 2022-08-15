@@ -1,10 +1,26 @@
-from ..permissons import IsAuthorOrReadOnly, IsAlreadyWelcomed
+from ssl import DER_cert_to_PEM_cert
+from rest_framework.decorators import action
+
+from ...users.models import User
+from ..permissons import IsActiveUser, IsAdminRole, IsAlreadyWelcomed, IsAuthorOrReadOnly, IsModeratorRole
 from ..models import Post
 from ..serializers.post_serializers import PostSerializer
-from rest_framework import viewsets
+from ..mixins.post_mixins import PostViewSetMixin
+from ..services.post_services import toggle_is_favourite
 
 
-class PostViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthorOrReadOnly, IsAlreadyWelcomed]
+class PostViewSet(PostViewSetMixin):
+    permission_classes = {
+        'create': [IsAuthorOrReadOnly, IsActiveUser],
+        'list': [(IsAdminRole | IsModeratorRole)]
+    }
     queryset = Post.objects.all()
     serializer_class = PostSerializer
+    
+    @action(detail=True, methods=['get'])
+    def favourite(self, request, pk=None):
+        return toggle_is_favourite(view=self, request=request)
+    
+    @action(detail=True, methods=['get'])
+    def unfavourite(self, request, pk=None):
+        return toggle_is_favourite(view=self,request=request)

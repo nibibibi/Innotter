@@ -11,7 +11,7 @@ def toggle_follow_or_request_invitation(view, request):
         return Response({'status': "user blacklisted"})
     if view.action == 'follow':
         if is_in_followers or is_in_requests:
-            return Response({'status': "is already following"}) # TODO: replace with permission *
+            return Response({'status': "is already following"}) # TODO: replace with permission
         elif page.is_private:
             page.follow_requests.add(user)
         else:
@@ -41,5 +41,7 @@ def toggle_page_is_blocked(view, request):
         else:
             page.is_permamently_blocked = False
             page.unblock_date = datetime.utcnow()
+    elif view.actiobn == 'timeblock':
+        pass
     page.save()    
     return Response({'status': "page toggled"})
