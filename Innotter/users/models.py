@@ -1,8 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-from pages.models import Post
-
 
 class User(AbstractUser):
     class Roles(models.TextChoices):
