@@ -1,7 +1,3 @@
-from rest_framework.response import Response
-
-from users.models import User
-
 from ..models import Page, Tag
 
 
@@ -9,18 +5,19 @@ def toggle_follow_request(view, request):
     user = request.user
     page = view.get_object()
     if user not in page.followers.all() and user not in page.follow_requests.all():
-        follow_request(request.user, view.get_object())
+        message = follow_request(request.user, view.get_object())
     else:
-        unfollow_request(user, page)
-    return Response({"status": "follow toggled"})
+        message = unfollow_request(user, page)
+    return message
 
 
 def follow_request(user, page):
-    if page.is_private() == True:
+    if page.is_private() is True:
         page.follow_requests.add(user)
     else:
         page.followers.add(user)
     page.save()
+    return 'followed'
 
 
 def unfollow_request(user, page):
@@ -29,79 +26,80 @@ def unfollow_request(user, page):
     else:
         page.follow_requests.remove(user)
     page.save()
+    return 'unfollowed'
 
 
-def toggle_page_permamently_blocked(
-    view, request
-):  # Request may be needed later in case we want to know who blocked the page
+def toggle_page_permamently_blocked(view, request):
     page = view.get_object()
-    if page.is_permamently_blocked == True:
-        print("unpermablocking...")
-        unpermablock_page(page=page)
+    if page.is_permamently_blocked:
+        action = unpermablock_page(page=page)
     else:
-        print("permablocking...")
-        permablock_page(page=page)
-    return Response({"status": "page state toggled"})
+        action = permablock_page(page=page)
+    return action
 
 
 def permablock_page(page: Page):
     page.is_permamently_blocked = True
     page.save()
+    return 'page blocked'
 
 
 def unpermablock_page(page: Page):
     page.is_permamently_blocked = False
     page.save()
+    return  'page unblocked'
 
 
 def accept_follow_request(view, request, pk=None):
     page = view.get_object()
     user = page.follow_requests.all().filter(pk=request.data.get("user_id")).first()
     if user is None:
-        return Response({"status": "no user in follow_requests"})
+        return "no user"
     else:
         page.followers.add(user)
         page.follow_requests.remove(user)
         page.save()
-        return Response({"status": "user moved"})
+        return "success"
 
 
 def reject_follow_request(view, request):
     page = view.get_object()
     user = page.follow_requests.all().filter(pk=request.data.get("user_id")).first()
     if user is None:
-        return Response({"status": "no user in follow_requests"})
+        return "no user"
     else:
         page.follow_requests.remove(user)
         page.save()
-        return Response({"status": "request rejected"})
+        return "success"
 
 
 def reject_all_follow_requests(view, request):
     page = view.get_object()
     page.follow_requests = []
     page.save()
-    return Response({"status": "follow_requests cleared"})
+    return "success"
 
 
 def toggle_page_is_private(view, request):
     page = view.get_object()
-    if page.is_private == False:
+    if not page.is_private:
         page.is_private = True
+        message = 'switched to private'
     else:
         page.is_private = False
+        message = 'switched to public'
     page.save()
-    return Response({"status": "page privacy toggled"})
+    return message
 
 
 def toggle_page_tag(view, request):
     page = view.get_object()
     tag = Tag.objects.filter(name=request.data.get("tag_name")).first()
     if tag is None:
-        return Response({"status": "tag does not exist yet"})
+        return "no tag"
     elif tag in page.tags.all():
         page.tags.remove(tag)
     else:
         page.tags.add(tag)
     page.save()
-    return Response({"status": "tag toggled"})
+    return "success"

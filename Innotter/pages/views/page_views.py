@@ -1,5 +1,5 @@
 from rest_framework.decorators import action
-
+from rest_framework.response import Response
 from ..mixins.page_mixins import PageViewSetMixin
 from ..models import Page
 from ..permissons import (
@@ -58,11 +58,13 @@ class PageViewSet(PageViewSetMixin):
 
     @action(detail=True, methods=["post"])
     def toggle_permablock(self, request, pk=None):
-        return toggle_page_permamently_blocked(view=self, request=request)
+        message = toggle_page_permamently_blocked(view=self, request=request)
+        return Response(message, status=200)
 
     @action(detail=True, methods=["post"])
     def toggle_follow(self, request, pk=None):
-        return toggle_follow_request(view=self, request=request)
+        message = toggle_follow_request(view=self, request=request)
+        return Response(message, status=200)
 
     @action(detail=True, methods=["put"])
     def timeblock(self, request, pk=None):
@@ -74,27 +76,36 @@ class PageViewSet(PageViewSetMixin):
 
     @action(detail=True, methods=["post"])
     def accept(self, request, pk=None):
-        return accept_follow_request(view=self, request=request)
+        message = accept_follow_request(view=self, request=request)
+        status = 200 if message == 'success' else 404
+        return Response(message, status)
 
     @action(detail=True, methods="post")
     def reject(self, request, pk=None):
-        return reject_follow_request(view=self, request=request)
+        message = reject_follow_request(view=self, request=request)
+        status = 200 if message == 'success' else 404
+        return Response(message, status)
 
     @action(detail=True, methods=["post"])
     def reject_all(self, request, pk=None):
-        return reject_all_follow_requests(view=self, request=request)
+        message = reject_all_follow_requests(view=self, request=request)
+        return Response(message, status=200)
 
     @action(detail=True, methods=["post"])
-    def toggle_is_priavte(self, request, pk=None):
-        return toggle_page_is_private(view=self, request=request)
+    def toggle_is_private(self, request, pk=None):
+        message = toggle_page_is_private(view=self, request=request)
+        return Response(message, status=200)
 
     @action(detail=True, methods=["post"])
     def toggle_tag(self, request, pk=None):
-        return toggle_page_tag(view=self, request=request)
+        message = toggle_page_tag(view=self, request=request)
+        if message == 'success':
+            status = 200
+        else:
+            status = 501
+        return Response(message, status)
 
-    def get_serializer_class(
-        self,
-    ):  # TODO: refactor to smth i dunno how it should look ahh whatever i'm hungry already even though i just ate in krasavik cafe btw my pass doesn't work in restaurant for some reason # TODO: delete previous comment # TODO: and next one too ( wait is it an infinite recursion? )
+    def get_serializer_class(self):
         return (
             self.serializer_classes[self.action]
             if self.action in self.serializer_classes

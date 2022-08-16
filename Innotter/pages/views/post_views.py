@@ -1,13 +1,10 @@
-from ssl import DER_cert_to_PEM_cert
-
 from rest_framework.decorators import action
-
+from rest_framework.response import Response
 from ..mixins.post_mixins import PostViewSetMixin
 from ..models import Post
 from ..permissons import (
     IsActiveUser,
     IsAdminRole,
-    IsAlreadyWelcomed,
     IsAuthorOrReadOnly,
     IsModeratorRole,
 )
@@ -26,9 +23,6 @@ class PostViewSet(PostViewSetMixin):
     serializer_class = PostSerializer
 
     @action(detail=True, methods=["get"])
-    def favourite(self, request, pk=None):
-        return toggle_is_favourite(view=self, request=request)
-
-    @action(detail=True, methods=["get"])
-    def unfavourite(self, request, pk=None):
-        return toggle_is_favourite(view=self, request=request)
+    def toggle_favourite(self, request, pk=None):
+        message = toggle_is_favourite(view=self, request=request)
+        return Response(message, status=200)
