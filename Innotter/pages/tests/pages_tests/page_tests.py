@@ -65,3 +65,20 @@ class TestPageLogic:
         response = list_viewset(request)
         assert response.status_code == 200
         assert len(response.data) == 150
+
+    @mock.patch("Innotter.settings.SECRET_KEY", "1")
+    def test_page_update(self, user: user, page: page, api_factory: APIRequestFactory):
+        request_data = {
+            'name': "newName",
+            'uuid': "newUUID",
+            'description': "newDescription"
+        }
+        page.owner = user
+        page.save()
+        request = api_factory.put(f"{self.url}{page.pk}", request_data)
+        token = generate_access_token(user)
+        force_authenticate(request=request, user=user, token=token)
+        response = default_viewset(request, pk=page.pk)
+
+        assert response.status_code == 200
+        assert response.data == request_data
