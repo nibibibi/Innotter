@@ -50,7 +50,7 @@ class TestAuthLogic:
         response = login_view(request)
 
         assert response.status_code == 200
-        assert len(response.data.get('access_token')) == len(response.data.get('refresh_token')) == 144
+        assert len(response.data.get('access_token')) == len(response.data.get('refresh_token'))
 
 
 
