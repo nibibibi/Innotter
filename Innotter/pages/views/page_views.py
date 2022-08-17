@@ -77,13 +77,13 @@ class PageViewSet(PageViewSetMixin):
     @action(detail=True, methods=["post"])
     def accept(self, request, pk=None):
         message = accept_follow_request(view=self, request=request)
-        status = 200 if message == 'success' else 404
+        status = 200 if message.get('status') == "request accepted" else 404
         return Response(message, status)
 
     @action(detail=True, methods="post")
     def reject(self, request, pk=None):
         message = reject_follow_request(view=self, request=request)
-        status = 200 if message == 'success' else 404
+        status = 200 if message.get('status') == 'request rejected' else 404
         return Response(message, status)
 
     @action(detail=True, methods=["post"])
@@ -99,7 +99,7 @@ class PageViewSet(PageViewSetMixin):
     @action(detail=True, methods=["post"])
     def toggle_tag(self, request, pk=None):
         message = toggle_page_tag(view=self, request=request)
-        if message == 'success':
+        if message.get('status') == "tag toggled":
             status = 200
         else:
             status = 501

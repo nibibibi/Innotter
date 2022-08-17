@@ -6,4 +6,4 @@ def toggle_is_favourite(view, request):
     else:
         user.favourite_posts.add(post)
     user.save()
-    return 'success'
+    return {'status': "toggled"}

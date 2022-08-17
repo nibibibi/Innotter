@@ -13,10 +13,10 @@ def toggle_block_unblock(view):
 def block_user(user):
     user.is_blocked = True
     user.save()
-    return 'user blocked'
+    return {'status': "user blocked"}
 
 
 def unblock_user(user):
     user.is_blocked = False
     user.save()
-    return 'user unblocked'
+    return {'status': "user unblocked"}

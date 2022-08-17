@@ -10,4 +10,3 @@ class UserFactory(factory.django.DjangoModelFactory):
         model = User
 
     username = fake.name()
-    is_staff = 'True'
