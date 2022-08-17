@@ -13,7 +13,7 @@ login_view = LoginView.as_view()
 pytestmark = pytest.mark.django_db
 
 
-class TestUserLogic:
+class TestAuthLogic:
     registration_url = "/auth/register"
     login_url = "/auth/login"
 
