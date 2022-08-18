@@ -42,6 +42,7 @@ class PageViewSet(PageViewSetMixin):
         "toggle_permablock": [IsAdminRole],
         "toggle_is_private": [IsOwnerOrReadOnly],
         "toggle_tag": [IsOwnerOrReadOnly],
+        "list_requests": [IsOwnerOrReadOnly],
     }
     serializer_classes = {
         "timeblock": TimeBlockPageSerializer,

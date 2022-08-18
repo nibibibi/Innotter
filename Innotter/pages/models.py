@@ -1,5 +1,5 @@
 from datetime import datetime
-
+import pytz
 from django.db import models
 
 
@@ -28,7 +28,7 @@ class Page(models.Model):
     )
 
     def is_blocked_atm(self):
-        return not (self.unblock_date == None or datetime.utcnow() > self.unblock_date)
+        return not (self.unblock_date is None or pytz.UTC.localize(datetime.utcnow()) > self.unblock_date)
 
 
 class Post(models.Model):

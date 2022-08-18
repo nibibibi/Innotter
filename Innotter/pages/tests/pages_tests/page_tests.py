@@ -1,3 +1,4 @@
+import datetime
 from unittest import mock
 
 from pages.serializers.page_serializers import PageSerializer
@@ -7,11 +8,13 @@ import pytest
 from rest_framework.test import APIRequestFactory, force_authenticate
 from pages.tests.pages_tests.conftest import new_page, page, private_page
 from pages.tests.users_tests.conftest import user
+from pages.serializers.page_serializers import TimeBlockPageSerializer
 from users.auth import generate_access_token
+from users.models import User
 from pages.views.page_views import PageViewSet
 
 pytestmark = pytest.mark.django_db
-default_views = PageViewSet.as_view(
+default_view = PageViewSet.as_view(
     {
         'post': "create",
         'get': "retrieve",
@@ -19,26 +22,12 @@ default_views = PageViewSet.as_view(
         'delete': "destroy"
     }
 )
-list_views = PageViewSet.as_view(
-    {
-        'get': "list"
-    }
-)
-toggle_block_view = PageViewSet.as_view(
-    {
-        'post': "toggle_permablock"
-    }
-)
-toggle_follow_view = PageViewSet.as_view(
-    {
-        'post': "toggle_follow"
-    }
-)
-toggle_is_private_view = PageViewSet.as_view(
-    {
-        'post': "toggle_is_private"
-    }
-)
+list_view = PageViewSet.as_view({'get': "list"})
+toggle_block_view = PageViewSet.as_view({'post': "toggle_permablock"})
+toggle_follow_view = PageViewSet.as_view({'post': "toggle_follow"})
+toggle_is_private_view = PageViewSet.as_view({'post': "toggle_is_private"})
+timeblock_view = PageViewSet.as_view({'put': "timeblock"})
+list_requests_view = PageViewSet.as_view({'get': 'list_requests'})
 
 
 class TestPageLogic:
@@ -59,9 +48,7 @@ class TestPageLogic:
         force_authenticate(request=request, user=user, token=token)
 
         assert not Page.objects.first()  # No pages exist
-
-        response = default_views(request, serialized_page)
-
+        response = default_view(request, serialized_page)
         assert response.status_code == 201
         assert response.data == PageSerializer(Page.objects.first()).data  # New page
 
@@ -70,8 +57,8 @@ class TestPageLogic:
         request = api_factory.get(f"{self.url}{page.pk}/")
         token = generate_access_token(user)
         force_authenticate(request=request, user=user, token=token)
-        response = default_views(request, pk=page.pk)
 
+        response = default_view(request, pk=page.pk)
         assert response.status_code == 200
         assert response.data == PageSerializer(page).data
 
@@ -81,7 +68,8 @@ class TestPageLogic:
         request = api_factory.get(self.url)
         token = generate_access_token(user)
         force_authenticate(request=request, user=user, token=token)
-        response = list_views(request)
+
+        response = list_view(request)
         assert response.status_code == 200
         assert len(response.data) == 5
         for page in response.data:
@@ -99,8 +87,8 @@ class TestPageLogic:
         request = api_factory.put(f"{self.url}{page.pk}", request_data)
         token = generate_access_token(user)
         force_authenticate(request=request, user=user, token=token)
-        response = default_views(request, pk=page.pk)
 
+        response = default_view(request, pk=page.pk)
         assert response.status_code == 200
         assert response.data == request_data
 
@@ -113,18 +101,20 @@ class TestPageLogic:
         force_authenticate(request=request, user=user, token=token)
 
         assert Page.objects.filter(pk=page.pk).first()  # Page does exist
-        response = default_views(request, pk=page.pk)
-        assert not Page.objects.filter(pk=page.pk).first()  # Page does not exist
 
+        response = default_view(request, pk=page.pk)
+        assert not Page.objects.filter(pk=page.pk).first()  # Page does not exist
         assert response.status_code == 204
         assert response.data is None
 
     @mock.patch("Innotter.settings.SECRET_KEY", "1")
     def test_page_toggle_permablock(self, page: page, user: user, api_factory: APIRequestFactory):
         assert not Page.objects.get(pk=page.pk).is_permamently_blocked  # New page is not blocked
+
         request = api_factory.post(f"{self.url}{page.pk}/toggle_permablock")
         token = generate_access_token(user)
         force_authenticate(request=request, user=user, token=token)
+
         response = toggle_block_view(request, pk=page.pk)
         assert Page.objects.get(pk=page.pk).is_permamently_blocked  # Page is blocked
         assert response.data.get('status') == "page blocked"
@@ -169,6 +159,7 @@ class TestPageLogic:
         page.owner = user
         page.save()
         assert Page.objects.get(pk=page.pk).is_private is False
+
         token = generate_access_token(user)
         request = api_factory.post(f"{self.url}{page.pk}/toggle_is_private")
         force_authenticate(request=request, user=user, token=token)
@@ -181,4 +172,45 @@ class TestPageLogic:
         assert response.data.get('status') == "switched to public"
         assert Page.objects.get(pk=page.pk).is_private is False
 
+    @mock.patch("Innotter.settings.SECRET_KEY", "1")
+    def test_timeblock(self, user: page, page: page, api_factory: APIRequestFactory):
+        assert page.unblock_date is None
+        assert page.is_blocked_atm() is False
 
+        put_json = {'unblock_date': str(datetime.datetime.utcnow() + datetime.timedelta(minutes=1)) + '+00:00'}
+        token = generate_access_token(user)
+        request = api_factory.put(f"{self.url}{page.pk}/timeblock", put_json)
+        force_authenticate(request=request, user=user, token=token)
+
+        response = timeblock_view(request, pk=page.pk)
+        assert response.status_code == 200
+        assert str(Page.objects.get(pk=page.pk).unblock_date) == put_json.get('unblock_date')
+        assert Page.objects.get(pk=page.pk).is_blocked_atm() is True
+        assert response.data == TimeBlockPageSerializer(Page.objects.get(pk=page.pk)).data
+
+    @mock.patch("Innotter.settings.SECRET_KEY", "1")
+    def test_list_requests(self, user: user, page: page, api_factory: APIRequestFactory):
+        page.owner = user
+        page.save()
+        requests_users = [baker.make(User) for i in range(3)]
+        for request in requests_users:
+            page.follow_requests.add(request)
+        page.save()
+
+        token = generate_access_token(user)
+        request = api_factory.get(f"{self.url}{page.pk}/list_requests")
+        force_authenticate(request=request, user=user, token=token)
+
+        response = list_requests_view(request, pk=page.pk)
+        assert len(response.data.get('follow_requests')) == 3
+        for key in response.data.get('follow_requests'):
+            assert User.objects.filter(pk=key).first() in page.follow_requests.all()
+
+    @mock.patch("Innotter.settings.SECRET_KEY", "1")
+    def test_accept_follow_request(self, user: user, page: page, api_factory: APIRequestFactory):
+        page.owner = user
+        page.save()
+        requester = baker.make(User)
+        page.follow_requests.add(requester)
+        page.save()
+        assert len(page.follow_requests.all()) == 0 and len(page.followers.all()) == 1
