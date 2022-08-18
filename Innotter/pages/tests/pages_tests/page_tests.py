@@ -129,7 +129,7 @@ class TestPageLogic:
         assert response.data.get('status') == "page unblocked"
 
     @mock.patch("Innotter.settings.SECRET_KEY", "1")
-    def toggle_follow(self, user: user, page: page, private_page: private_page, api_factory: APIRequestFactory):
+    def test_toggle_follow(self, user: user, page: page, private_page: private_page, api_factory: APIRequestFactory):
         assert not (user in page.followers.all() and user in page.follow_requests.all())
         assert not (user in private_page.followers.all() and user in private_page.follow_requests.all())
 
@@ -139,10 +139,24 @@ class TestPageLogic:
         force_authenticate(request=request, user=user, token=token)
         response = toggle_follow_view(request, pk=page.pk)
         assert user in page.followers.all() and user not in page.follow_requests.all()
-        assert response.data.get('status') == "page followed"
+        assert response.data.get('status') == "page followed" and response.status_code == 200
 
         request = api_factory.post(f"{self.url}{private_page.pk}/toggle_follow")
         force_authenticate(request=request, user=user, token=token)
+        response = toggle_follow_view(request, pk=private_page.pk)
+        assert user not in private_page.followers.all() and user in private_page.follow_requests.all()
+        assert response.data.get('status') == "page followed" and response.status_code == 200
+
+        request = api_factory.post(f"{self.url}{page.pk}/toggle_follow")
+        force_authenticate(request=request, user=user, token=token)
         response = toggle_follow_view(request, pk=page.pk)
-        assert user not in page.followers.all() and user in page.follow_requests.all()
-        assert response.data.get('status') == "page followed"
+        assert user not in page.followers.all() and user not in page.follow_requests.all()
+        assert response.data.get('status') == "page unfollowed" and response.status_code == 200
+
+        request = api_factory.post(f"{self.url}{private_page.pk}/toggle_follow")
+        force_authenticate(request=request, user=user, token=token)
+        response = toggle_follow_view(request, pk=private_page.pk)
+        assert user not in private_page.followers.all() and user not in private_page.follow_requests.all()
+        assert response.data.get('status') == "page unfollowed" and response.status_code == 200
+
+

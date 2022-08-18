@@ -12,7 +12,7 @@ def toggle_follow_request(view, request):
 
 
 def follow_request(user, page):
-    if page.is_private() is True:
+    if page.is_private is True:
         page.follow_requests.add(user)
     else:
         page.followers.add(user)
