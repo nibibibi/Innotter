@@ -1,11 +1,13 @@
 from unittest import mock
 
+import jwt
 import pytest
 
 from users.models import User
 from users.views import RegistrationView, LoginView
 from model_bakery import baker
 from rest_framework.test import APIRequestFactory
+from users.serializers import UserSerializer
 
 api_factory = APIRequestFactory()
 registration_view = RegistrationView.as_view()
@@ -50,8 +52,15 @@ class TestAuthLogic:
         response = login_view(request)
 
         assert response.status_code == 200
-        assert len(response.data.get('access_token')) == len(response.data.get('refresh_token'))
 
+        access_token_payload = jwt.decode(response.data.get('access_token'),
+                                          'django-insecure--s*8gg=v&!+di@*(3i)ukc$6qvs%&gzv%nmy1whl51y@ls2fw3',
+                                          algorithms=['HS256'])
+        refresh_token_payload = jwt.decode(response.data.get('refresh_token'),
+                                           'django-insecure--s*8gg=v&!+di@*(3i)ukc$6qvs%&gzv%nmy1whl51y@ls2fw3',
+                                           algorithms=['HS256'])
+        assert access_token_payload.get('user_id') == refresh_token_payload.get('user_id') == user.pk
+        assert response.data.get('user') == UserSerializer(user).data
 
 
 

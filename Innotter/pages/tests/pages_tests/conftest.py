@@ -10,5 +10,13 @@ def page(user: User):
 
 
 @pytest.fixture
+def private_page(user: User):
+    page = baker.make(Page)
+    page.is_private = True
+    page.save()
+    return page
+
+
+@pytest.fixture
 def new_page():
     return baker.prepare(Page)

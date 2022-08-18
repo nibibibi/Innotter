@@ -23,14 +23,13 @@ def log_user_in(request):
     serialized_user = UserSerializer(user).data
     access_token = generate_access_token(user)
     refresh_token = generate_refresh_token(user)
-    response = Response()
-    response.data = {
+    data = {
         "refresh_token": refresh_token,
         "access_token": access_token,
         "user": serialized_user,
     }
 
-    return response
+    return data
 
 
 def refresh_access_token(request):
