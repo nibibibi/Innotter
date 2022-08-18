@@ -34,6 +34,11 @@ toggle_follow_view = PageViewSet.as_view(
         'post': "toggle_follow"
     }
 )
+toggle_is_private_view = PageViewSet.as_view(
+    {
+        'post': "toggle_is_private"
+    }
+)
 
 
 class TestPageLogic:
@@ -158,5 +163,22 @@ class TestPageLogic:
         response = toggle_follow_view(request, pk=private_page.pk)
         assert user not in private_page.followers.all() and user not in private_page.follow_requests.all()
         assert response.data.get('status') == "page unfollowed" and response.status_code == 200
+
+    @mock.patch("Innotter.settings.SECRET_KEY", "1")
+    def test_toggle_is_private(self, user: user, page: page, api_factory: APIRequestFactory):
+        page.owner = user
+        page.save()
+        assert Page.objects.get(pk=page.pk).is_private is False
+        token = generate_access_token(user)
+        request = api_factory.post(f"{self.url}{page.pk}/toggle_is_private")
+        force_authenticate(request=request, user=user, token=token)
+
+        response = toggle_is_private_view(request, pk=page.pk)
+        assert response.data.get('status') == "switched to private"
+        assert Page.objects.get(pk=page.pk).is_private is True
+
+        response = toggle_is_private_view(request, pk=page.pk)
+        assert response.data.get('status') == "switched to public"
+        assert Page.objects.get(pk=page.pk).is_private is False
 
 
