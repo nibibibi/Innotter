@@ -28,6 +28,7 @@ toggle_follow_view = PageViewSet.as_view({'post': "toggle_follow"})
 toggle_is_private_view = PageViewSet.as_view({'post': "toggle_is_private"})
 timeblock_view = PageViewSet.as_view({'put': "timeblock"})
 list_requests_view = PageViewSet.as_view({'get': 'list_requests'})
+accept_follow_request_view = PageViewSet.as_view({'post': 'accept'})
 
 
 class TestPageLogic:
@@ -209,8 +210,21 @@ class TestPageLogic:
     @mock.patch("Innotter.settings.SECRET_KEY", "1")
     def test_accept_follow_request(self, user: user, page: page, api_factory: APIRequestFactory):
         page.owner = user
-        page.save()
         requester = baker.make(User)
         page.follow_requests.add(requester)
         page.save()
-        assert len(page.follow_requests.all()) == 0 and len(page.followers.all()) == 1
+        assert len(page.follow_requests.all()) == 1 and len(page.followers.all()) == 0
+        token = generate_access_token(user)
+
+        request = api_factory.post(f"{self.url}{page.pk}/accept", {'user_id': requester.pk})
+        force_authenticate(request=request, user=user, token=token)
+        response = accept_follow_request_view(request, pk=page.pk)
+        assert response.status_code == 200 and response.data.get('status') == "request accepted"
+        assert len(Page.objects.get(pk=page.pk).followers.all()) == 1 and \
+               len(Page.objects.get(pk=page.pk).follow_requests.all()) == 0
+        assert Page.objects.get(pk=page.pk).followers.first() == User.objects.get(pk=requester.pk)
+
+        request = api_factory.post(f"{self.url}{page.pk}/accept", {'user_id': 421541})
+        force_authenticate(request=request, user=user, token=token)
+        response = accept_follow_request_view(request, pk=page.pk)
+        assert response.status_code == 404 and response.data.get('status') == "user not found"

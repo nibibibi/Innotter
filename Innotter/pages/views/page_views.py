@@ -43,6 +43,7 @@ class PageViewSet(PageViewSetMixin):
         "toggle_is_private": [IsOwnerOrReadOnly],
         "toggle_tag": [IsOwnerOrReadOnly],
         "list_requests": [IsOwnerOrReadOnly],
+        "accept": [IsOwnerOrReadOnly],
     }
     serializer_classes = {
         "timeblock": TimeBlockPageSerializer,
