@@ -75,7 +75,7 @@ def reject_follow_request(view, request):
 
 def reject_all_follow_requests(view, request):
     page = view.get_object()
-    page.follow_requests = []
+    page.follow_requests.set([])
     page.save()
     return {'status': "requests rejected"}
 

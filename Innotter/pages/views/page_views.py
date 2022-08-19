@@ -44,6 +44,8 @@ class PageViewSet(PageViewSetMixin):
         "toggle_tag": [IsOwnerOrReadOnly],
         "list_requests": [IsOwnerOrReadOnly],
         "accept": [IsOwnerOrReadOnly],
+        "reject": [IsOwnerOrReadOnly],
+        "reject_all": [IsOwnerOrReadOnly],
     }
     serializer_classes = {
         "timeblock": TimeBlockPageSerializer,
@@ -85,7 +87,7 @@ class PageViewSet(PageViewSetMixin):
     @action(detail=True, methods="post")
     def reject(self, request, pk=None):
         message = reject_follow_request(view=self, request=request)
-        status = 200 if message.get('status') == 'request rejected' else 404
+        status = 200 if message.get('status') == "request rejected" else 404
         return Response(message, status)
 
     @action(detail=True, methods=["post"])

@@ -27,8 +27,10 @@ toggle_block_view = PageViewSet.as_view({'post': "toggle_permablock"})
 toggle_follow_view = PageViewSet.as_view({'post': "toggle_follow"})
 toggle_is_private_view = PageViewSet.as_view({'post': "toggle_is_private"})
 timeblock_view = PageViewSet.as_view({'put': "timeblock"})
-list_requests_view = PageViewSet.as_view({'get': 'list_requests'})
-accept_follow_request_view = PageViewSet.as_view({'post': 'accept'})
+list_requests_view = PageViewSet.as_view({'get': "list_requests"})
+accept_follow_request_view = PageViewSet.as_view({'post': "accept"})
+reject_follow_request_view = PageViewSet.as_view({'post': "reject"})
+reject_all_view = PageViewSet.as_view({'post': "reject_all"})
 
 
 class TestPageLogic:
@@ -126,31 +128,27 @@ class TestPageLogic:
 
     @mock.patch("Innotter.settings.SECRET_KEY", "1")
     def test_toggle_follow(self, user: user, page: page, private_page: private_page, api_factory: APIRequestFactory):
-        assert not (user in page.followers.all() and user in page.follow_requests.all())
-        assert not (user in private_page.followers.all() and user in private_page.follow_requests.all())
+        assert not (user in page.followers.all() or user in page.follow_requests.all())
+        assert not (user in private_page.followers.all() or user in private_page.follow_requests.all())
 
         token = generate_access_token(user)
 
         request = api_factory.post(f"{self.url}{page.pk}/toggle_follow")
         force_authenticate(request=request, user=user, token=token)
+
         response = toggle_follow_view(request, pk=page.pk)
         assert user in page.followers.all() and user not in page.follow_requests.all()
         assert response.data.get('status') == "page followed" and response.status_code == 200
-
-        request = api_factory.post(f"{self.url}{private_page.pk}/toggle_follow")
-        force_authenticate(request=request, user=user, token=token)
-        response = toggle_follow_view(request, pk=private_page.pk)
-        assert user not in private_page.followers.all() and user in private_page.follow_requests.all()
-        assert response.data.get('status') == "page followed" and response.status_code == 200
-
-        request = api_factory.post(f"{self.url}{page.pk}/toggle_follow")
-        force_authenticate(request=request, user=user, token=token)
         response = toggle_follow_view(request, pk=page.pk)
         assert user not in page.followers.all() and user not in page.follow_requests.all()
         assert response.data.get('status') == "page unfollowed" and response.status_code == 200
 
         request = api_factory.post(f"{self.url}{private_page.pk}/toggle_follow")
         force_authenticate(request=request, user=user, token=token)
+
+        response = toggle_follow_view(request, pk=private_page.pk)
+        assert user not in private_page.followers.all() and user in private_page.follow_requests.all()
+        assert response.data.get('status') == "page followed" and response.status_code == 200
         response = toggle_follow_view(request, pk=private_page.pk)
         assert user not in private_page.followers.all() and user not in private_page.follow_requests.all()
         assert response.data.get('status') == "page unfollowed" and response.status_code == 200
@@ -184,16 +182,17 @@ class TestPageLogic:
         force_authenticate(request=request, user=user, token=token)
 
         response = timeblock_view(request, pk=page.pk)
+        page = Page.objects.get(pk=page.pk)
         assert response.status_code == 200
-        assert str(Page.objects.get(pk=page.pk).unblock_date) == put_json.get('unblock_date')
-        assert Page.objects.get(pk=page.pk).is_blocked_atm() is True
-        assert response.data == TimeBlockPageSerializer(Page.objects.get(pk=page.pk)).data
+        assert str(page.unblock_date) == put_json.get('unblock_date')
+        assert page.is_blocked_atm() is True
+        assert response.data == TimeBlockPageSerializer(page).data
 
     @mock.patch("Innotter.settings.SECRET_KEY", "1")
     def test_list_requests(self, user: user, page: page, api_factory: APIRequestFactory):
         page.owner = user
         page.save()
-        requests_users = [baker.make(User) for i in range(3)]
+        requests_users = baker.make(User, _quantity=3)
         for request in requests_users:
             page.follow_requests.add(request)
         page.save()
@@ -210,21 +209,53 @@ class TestPageLogic:
     @mock.patch("Innotter.settings.SECRET_KEY", "1")
     def test_accept_follow_request(self, user: user, page: page, api_factory: APIRequestFactory):
         page.owner = user
-        requester = baker.make(User)
-        page.follow_requests.add(requester)
+        requesters = baker.make(User, _quantity=2)
+        [page.follow_requests.add(requester) for requester in requesters]
         page.save()
-        assert len(page.follow_requests.all()) == 1 and len(page.followers.all()) == 0
-        token = generate_access_token(user)
 
-        request = api_factory.post(f"{self.url}{page.pk}/accept", {'user_id': requester.pk})
+        token = generate_access_token(user)
+        request = api_factory.post(f"{self.url}{page.pk}/accept", {'user_id': requesters[0].pk})
         force_authenticate(request=request, user=user, token=token)
         response = accept_follow_request_view(request, pk=page.pk)
+        page = Page.objects.get(pk=page.pk)
         assert response.status_code == 200 and response.data.get('status') == "request accepted"
-        assert len(Page.objects.get(pk=page.pk).followers.all()) == 1 and \
-               len(Page.objects.get(pk=page.pk).follow_requests.all()) == 0
-        assert Page.objects.get(pk=page.pk).followers.first() == User.objects.get(pk=requester.pk)
+        assert len(page.followers.all()) == 1 and \
+               len(page.follow_requests.all()) == len(requesters) - 1
+        assert page.followers.first() == User.objects.get(pk=requesters[0].pk)
 
         request = api_factory.post(f"{self.url}{page.pk}/accept", {'user_id': 421541})
         force_authenticate(request=request, user=user, token=token)
         response = accept_follow_request_view(request, pk=page.pk)
         assert response.status_code == 404 and response.data.get('status') == "user not found"
+
+    @mock.patch("Innotter.settings.SECRET_KEY", "1")
+    def test_reject_follow_request(self, user: user, page: page, api_factory: APIRequestFactory):
+        page.owner = user
+        requesters = baker.make(User, _quantity=2)
+        [page.follow_requests.add(requester) for requester in requesters]
+        page.save()
+
+        token = generate_access_token(user)
+        request = api_factory.post(f"{self.url}{page.pk}/accept", {'user_id': requesters[0].pk})
+        force_authenticate(request=request, user=user, token=token)
+        response = reject_follow_request_view(request, pk=page.pk)
+        page = Page.objects.get(pk=page.pk)
+        assert len(page.followers.all()) == 0 and len(page.follow_requests.all()) == 1
+        assert page.follow_requests.first() == requesters[1]
+        assert response.status_code == 200 and response.data.get('status') == 'request rejected'
+
+    @mock.patch("Innotter.settings.SECRET_KEY", "1")
+    def test_reject_all(self, user: user, page: page, api_factory: APIRequestFactory):
+        page.owner = user
+        requesters = baker.make(User, _quantity=150)
+        [page.follow_requests.add(requester) for requester in requesters]
+        page.save()
+        assert len(page.follow_requests.all()) == 150
+
+        token = generate_access_token(user)
+        request = api_factory.post(f"{self.url}{page.pk}/reject_all")
+        force_authenticate(request=request, user=user, token=token)
+        response = reject_all_view(request, pk=page.pk)
+        page = Page.objects.get(pk=page.pk)
+        assert len(page.follow_requests.all()) == 0
+        assert response.status_code == 200 and response.data.get('status') == "requests rejected"
