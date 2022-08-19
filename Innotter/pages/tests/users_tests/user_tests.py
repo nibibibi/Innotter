@@ -24,9 +24,11 @@ class TestUserLogic:
         force_authenticate(request, user=user, token=token)
 
         response = toggle_block_unblock_view(request, pk=user_to_block.pk)
-        assert response.data.get('status') == "user blocked" and User.objects.get(pk=user_to_block.pk).is_blocked is True
+        assert response.data.get('status') == "user blocked" and \
+               User.objects.get(pk=user_to_block.pk).is_blocked is True
         response = toggle_block_unblock_view(request, pk=user_to_block.pk)
-        assert response.data.get('status') == "user unblocked" and User.objects.get(pk=user_to_block.pk).is_blocked is False
+        assert response.data.get('status') == "user unblocked" and \
+               User.objects.get(pk=user_to_block.pk).is_blocked is False
 
     @mock.patch("Innotter.settings.SECRET_KEY", "1")
     def test_list_favourites(self, user: user, api_factory: APIRequestFactory):

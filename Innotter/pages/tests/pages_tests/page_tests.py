@@ -113,7 +113,7 @@ class TestPageLogic:
         assert response.data is None
 
     @mock.patch("Innotter.settings.SECRET_KEY", "1")
-    def test_page_toggle_permablock(self, page: page, user: user, api_factory: APIRequestFactory):
+    def test_toggle_permablock(self, page: page, user: user, api_factory: APIRequestFactory):
         assert not Page.objects.get(pk=page.pk).is_permamently_blocked  # New page is not blocked
 
         request = api_factory.post(f"{self.url}{page.pk}/toggle_permablock")
