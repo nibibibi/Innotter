@@ -8,6 +8,7 @@ import pytest
 from rest_framework.test import APIRequestFactory, force_authenticate
 from pages.tests.pages_tests.conftest import new_page, page, private_page
 from pages.tests.users_tests.conftest import user
+from pages.tests.tags_tests.conftest import tag
 from pages.serializers.page_serializers import TimeBlockPageSerializer
 from users.auth import generate_access_token
 from users.models import User
@@ -31,6 +32,7 @@ list_requests_view = PageViewSet.as_view({'get': "list_requests"})
 accept_follow_request_view = PageViewSet.as_view({'post': "accept"})
 reject_follow_request_view = PageViewSet.as_view({'post': "reject"})
 reject_all_view = PageViewSet.as_view({'post': "reject_all"})
+toggle_tag_view = PageViewSet.as_view({'post': "toggle_tag"})
 
 
 class TestPageLogic:
@@ -259,3 +261,19 @@ class TestPageLogic:
         page = Page.objects.get(pk=page.pk)
         assert len(page.follow_requests.all()) == 0
         assert response.status_code == 200 and response.data.get('status') == "requests rejected"
+
+    @mock.patch("Innotter.settings.SECRET_KEY", "1")
+    def test_toggle_tag(self, user: user, page: page, tag: tag, api_factory: APIRequestFactory):
+        page.owner = user
+        page.save()
+        assert len(page.tags.all()) == 0
+
+        token = generate_access_token(user)
+        request = api_factory.post(f"{self.url}{page.pk}/toggle_tag", {'tag_name': tag.name})
+        force_authenticate(request=request, user=user, token=token)
+        response = toggle_tag_view(request, pk=page.pk)
+        assert response.data.get('status') == "tag toggled" and response.status_code == 200
+        assert Page.objects.get(pk=page.pk).tags.first() == tag
+        response = toggle_tag_view(request, pk=page.pk)
+        assert len(Page.objects.get(pk=page.pk).tags.all()) == 0
+        assert response.data.get('status') == "tag toggled" and response.status_code == 200
