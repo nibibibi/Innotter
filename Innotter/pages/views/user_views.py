@@ -21,11 +21,11 @@ class UserViewSet(UserViewSetMixin):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
-    @action(detail=True, methods=["get"])
+    @action(detail=True, methods=["post"])
     def toggle_block(self, request, pk=None):
         message = user_services.toggle_block_unblock(view=self)
         return Response(message, status=200)
 
     @action(detail=False, methods=["get"])
     def list_favourites(self, request):
-        return JsonResponse(UserFavouritePostsSerializer(request.user).data, status=200)
+        return Response(UserFavouritePostsSerializer(request.user).data, status=200)

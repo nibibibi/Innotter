@@ -1,5 +1,6 @@
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from ..mixins.post_mixins import PostViewSetMixin
 from ..models import Post
 from ..permissons import (
@@ -14,15 +15,16 @@ from ..services.post_services import toggle_is_favourite
 
 class PostViewSet(PostViewSetMixin):
     permission_classes = {
+        "favourite": [IsActiveUser],
         "create": [IsAuthorOrReadOnly, IsActiveUser],
         "list": [(IsAdminRole | IsModeratorRole | IsActiveUser)],
-        "favourite": [IsActiveUser],
+        "retrieve": [IsActiveUser, IsAuthorOrReadOnly],
         "destroy": [(IsAdminRole | IsModeratorRole)],
     }
     queryset = Post.objects.all()
     serializer_class = PostSerializer
 
-    @action(detail=True, methods=["get"])
-    def toggle_favourite(self, request, pk=None):
+    @action(detail=True, methods=["post"])
+    def favourite(self, request, pk=None):
         message = toggle_is_favourite(view=self, request=request)
         return Response(message, status=200)

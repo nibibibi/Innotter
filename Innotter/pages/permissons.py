@@ -62,3 +62,4 @@ class IsNotBlacklisted(permissions.BasePermission):
 class DictionaryPermissionsMixin:
     def get_permissions(self):
         return [permission() for permission in self.permission_classes.get(self.action)]
+
