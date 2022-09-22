@@ -17,7 +17,6 @@ list_favourite_posts_view = UserViewSet.as_view({'get': "list_favourites"})
 class TestUserLogic:
     url = "/resource/users/"
 
-    @mock.patch("Innotter.settings.SECRET_KEY", "1")
     def test_toggle_block_unblock(self, user: user, new_user: new_user, api_factory: APIRequestFactory):
         user_to_block = new_user
         user_to_block.save()
@@ -33,7 +32,6 @@ class TestUserLogic:
         assert response.data.get('status') == "user unblocked" and \
                User.objects.get(pk=user_to_block.pk).is_blocked is False
 
-    @mock.patch("Innotter.settings.SECRET_KEY", "1")
     def test_list_favourites(self, user: user, api_factory: APIRequestFactory):
         posts = baker.make(Post, _quantity=150)
         for post in posts:

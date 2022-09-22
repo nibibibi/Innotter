@@ -1,5 +1,4 @@
 import datetime
-from unittest import mock
 
 from pages.serializers.page_serializers import PageSerializer
 from pages.models import Page
@@ -38,7 +37,6 @@ toggle_tag_view = PageViewSet.as_view({'post': "toggle_tag"})
 class TestPageLogic:
     url = "resource/pages/"
 
-    @mock.patch("Innotter.settings.SECRET_KEY", "1")
     def test_create_page(self, user: user, new_page: new_page, api_factory: APIRequestFactory):
         serialized_page = {
             'uuid': new_page.uuid,
@@ -57,7 +55,6 @@ class TestPageLogic:
         assert response.status_code == 201
         assert response.data == PageSerializer(Page.objects.first()).data  # New page
 
-    @mock.patch("Innotter.settings.SECRET_KEY", "1")
     def test_retrieve_page(self, user: user, page: page, api_factory: APIRequestFactory):
         request = api_factory.get(f"{self.url}{page.pk}/")
         token = generate_access_token(user)
@@ -67,7 +64,6 @@ class TestPageLogic:
         assert response.status_code == 200
         assert response.data == PageSerializer(page).data
 
-    @mock.patch("Innotter.settings.SECRET_KEY", "1")
     def test_list_pages(self, user: user, api_factory: APIRequestFactory):
         baker.make(Page, _quantity=5)
         request = api_factory.get(self.url)
@@ -80,7 +76,6 @@ class TestPageLogic:
         for page in response.data:
             assert page == PageSerializer(Page.objects.get(pk=page.get('id'))).data
 
-    @mock.patch("Innotter.settings.SECRET_KEY", "1")
     def test_page_update(self, user: user, page: page, api_factory: APIRequestFactory):
         request_data = {
             'name': "newName",
@@ -97,7 +92,6 @@ class TestPageLogic:
         assert response.status_code == 200
         assert response.data == request_data
 
-    @mock.patch("Innotter.settings.SECRET_KEY", "1")
     def test_page_destroy(self, page: page, user: user, api_factory: APIRequestFactory):
         page.owner = user
         page.save()
@@ -112,7 +106,6 @@ class TestPageLogic:
         assert response.status_code == 204
         assert response.data is None
 
-    @mock.patch("Innotter.settings.SECRET_KEY", "1")
     def test_toggle_permablock(self, page: page, user: user, api_factory: APIRequestFactory):
         assert not Page.objects.get(pk=page.pk).is_permamently_blocked  # New page is not blocked
 
@@ -128,7 +121,6 @@ class TestPageLogic:
         assert not Page.objects.get(pk=page.pk).is_permamently_blocked  # Page is not blocked
         assert response.data.get('status') == "page unblocked"
 
-    @mock.patch("Innotter.settings.SECRET_KEY", "1")
     def test_toggle_follow(self, user: user, page: page, private_page: private_page, api_factory: APIRequestFactory):
         assert not (user in page.followers.all() or user in page.follow_requests.all())
         assert not (user in private_page.followers.all() or user in private_page.follow_requests.all())
@@ -155,7 +147,6 @@ class TestPageLogic:
         assert user not in private_page.followers.all() and user not in private_page.follow_requests.all()
         assert response.data.get('status') == "page unfollowed" and response.status_code == 200
 
-    @mock.patch("Innotter.settings.SECRET_KEY", "1")
     def test_toggle_is_private(self, user: user, page: page, api_factory: APIRequestFactory):
         page.owner = user
         page.save()
@@ -173,7 +164,6 @@ class TestPageLogic:
         assert response.data.get('status') == "switched to public"
         assert Page.objects.get(pk=page.pk).is_private is False
 
-    @mock.patch("Innotter.settings.SECRET_KEY", "1")
     def test_timeblock(self, user: page, page: page, api_factory: APIRequestFactory):
         assert page.unblock_date is None
         assert page.is_blocked_atm() is False
@@ -190,7 +180,6 @@ class TestPageLogic:
         assert page.is_blocked_atm() is True
         assert response.data == TimeBlockPageSerializer(page).data
 
-    @mock.patch("Innotter.settings.SECRET_KEY", "1")
     def test_list_requests(self, user: user, page: page, api_factory: APIRequestFactory):
         page.owner = user
         page.save()
@@ -208,7 +197,6 @@ class TestPageLogic:
         for key in response.data.get('follow_requests'):
             assert User.objects.filter(pk=key).first() in page.follow_requests.all()
 
-    @mock.patch("Innotter.settings.SECRET_KEY", "1")
     def test_accept_follow_request(self, user: user, page: page, api_factory: APIRequestFactory):
         page.owner = user
         requesters = baker.make(User, _quantity=2)
@@ -230,7 +218,6 @@ class TestPageLogic:
         response = accept_follow_request_view(request, pk=page.pk)
         assert response.status_code == 404 and response.data.get('status') == "user not found"
 
-    @mock.patch("Innotter.settings.SECRET_KEY", "1")
     def test_reject_follow_request(self, user: user, page: page, api_factory: APIRequestFactory):
         page.owner = user
         requesters = baker.make(User, _quantity=2)
@@ -246,7 +233,6 @@ class TestPageLogic:
         assert page.follow_requests.first() == requesters[1]
         assert response.status_code == 200 and response.data.get('status') == 'request rejected'
 
-    @mock.patch("Innotter.settings.SECRET_KEY", "1")
     def test_reject_all(self, user: user, page: page, api_factory: APIRequestFactory):
         page.owner = user
         requesters = baker.make(User, _quantity=150)
@@ -262,7 +248,6 @@ class TestPageLogic:
         assert len(page.follow_requests.all()) == 0
         assert response.status_code == 200 and response.data.get('status') == "requests rejected"
 
-    @mock.patch("Innotter.settings.SECRET_KEY", "1")
     def test_toggle_tag(self, user: user, page: page, tag: tag, api_factory: APIRequestFactory):
         page.owner = user
         page.save()

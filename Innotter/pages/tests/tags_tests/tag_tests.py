@@ -19,7 +19,6 @@ list_viewset = TagViewSet.as_view({"get": "list"})
 class TestTagLogic:
     url = "resource/tags/"
 
-    @mock.patch("Innotter.settings.SECRET_KEY", "1")
     def test_create_tag(self, user: user, api_factory: APIRequestFactory):
         request = api_factory.post(f"{self.url}", {'name': "test tag"})
         token = generate_access_token(user)
@@ -28,7 +27,6 @@ class TestTagLogic:
 
         assert response.status_code == 201 and response.data == TagSerializer(Tag.objects.first()).data
 
-    @mock.patch("Innotter.settings.SECRET_KEY", "1")
     def test_destroy_tag(self, user: user, tag: tag, api_factory: APIRequestFactory):
         assert len(Tag.objects.all()) == 1 and Tag.objects.first() == tag
         request = api_factory.delete(f"{self.url}{tag.pk}")
@@ -38,7 +36,6 @@ class TestTagLogic:
 
         assert response.status_code == 204 and len(Tag.objects.all()) == 0
 
-    @mock.patch("Innotter.settings.SECRET_KEY", "1")
     def test_retrieve_tag(self, user: user, tag: tag, api_factory: APIRequestFactory):
         request = api_factory.get(f"{self.url}{tag.pk}")
         token = generate_access_token(user)
@@ -47,7 +44,6 @@ class TestTagLogic:
 
         assert response.status_code == 200 and response.data == TagSerializer(tag).data
 
-    @mock.patch("Innotter.settings.SECRET_KEY", "1")
     def test_list_tags(self, user: user, tags: tags, api_factory: APIRequestFactory):
         request = api_factory.get(f"{self.url}")
         token = generate_access_token(user)

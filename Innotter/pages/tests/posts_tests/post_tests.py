@@ -23,7 +23,6 @@ toggle_favourite_viewset = PostViewSet.as_view({"post": "favourite"})
 class TestPostLogic:
     url = "resource/posts/"
 
-    @mock.patch("Innotter.settings.SECRET_KEY", "1")
     def test_create_post(self, user: user, api_factory: APIRequestFactory, page: page):
         page.owner = user
         page.save()
@@ -39,7 +38,6 @@ class TestPostLogic:
 
         assert response.status_code == 201 and response.data == PostSerializer(Post.objects.first()).data
 
-    @mock.patch("Innotter.settings.SECRET_KEY", "1")
     def test_destroy_post(self, user: user, post: post, api_factory: APIRequestFactory):
         assert len(Post.objects.all()) == 1 and Post.objects.first() == post
         post.page.owner = user
@@ -51,7 +49,7 @@ class TestPostLogic:
 
         assert response.status_code == 204 and len(Post.objects.all()) == 0
 
-    @mock.patch("Innotter.settings.SECRET_KEY", "1")
+
     def test_retrieve_tag(self, user: user, post: post, api_factory: APIRequestFactory):
         request = api_factory.get(f"{self.url}{post.pk}")
         token = generate_access_token(user)
@@ -60,7 +58,6 @@ class TestPostLogic:
 
         assert response.status_code == 200 and response.data == PostSerializer(post).data
 
-    @mock.patch("Innotter.settings.SECRET_KEY", "1")
     def test_list_posts(self, user: user, posts: posts, api_factory: APIRequestFactory):
         request = api_factory.get(f"{self.url}")
         token = generate_access_token(user)
@@ -70,7 +67,6 @@ class TestPostLogic:
         assert response.status_code == 200 and len(response.data) == len(posts)
         assert response.data == PostSerializer(posts, many=True).data
 
-    @mock.patch("Innotter.settings.SECRET_KEY", "1")
     def test_toggle_post_favourite(self, post: post, user: user, api_factory: APIRequestFactory):
         assert len(user.favourite_posts.all()) == 0
         request = api_factory.post(f"{self.url}/{post.pk}/favourite")
