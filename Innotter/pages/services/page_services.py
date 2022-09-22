@@ -4,37 +4,27 @@ from ..models import Page, Tag
 def toggle_follow_request(view, request):
     user = request.user
     page = view.get_object()
-    if user not in page.followers.all() and user not in page.follow_requests.all():
-        message = follow_request(request.user, view.get_object())
-    else:
-        message = unfollow_request(user, page)
+    message = follow_request(request.user, view.get_object())\
+        if user not in page.followers.all() and user not in page.follow_requests.all()\
+        else unfollow_request(user, page)
     return message
 
 
 def follow_request(user, page):
-    if page.is_private is True:
-        page.follow_requests.add(user)
-    else:
-        page.followers.add(user)
+    page.follow_requests.add(user) if page.is_private else page.followers.add(user)
     page.save()
     return {'status': "page followed"}
 
 
 def unfollow_request(user, page):
-    if user in page.followers.all():
-        page.followers.remove(user)
-    else:
-        page.follow_requests.remove(user)
+    page.followers.remove(user) if user in page.followers.all() else page.follow_requests.remove(user)
     page.save()
     return {'status': "page unfollowed"}
 
 
 def toggle_page_permamently_blocked(view, request):
     page = view.get_object()
-    if page.is_permamently_blocked:
-        message = unpermablock_page(page=page)
-    else:
-        message = permablock_page(page=page)
+    message = unpermablock_page(page=page) if page.is_permamently_blocked else permablock_page(page=page)
     return message
 
 
