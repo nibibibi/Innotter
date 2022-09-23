@@ -42,7 +42,7 @@ def unpermablock_page(page: Page):
 
 def accept_follow_request(view, request, pk=None):
     page = view.get_object()
-    user = page.follow_requests.all().filter(pk=request.data.get("user_id")).first()
+    user = page.follow_requests.filter(pk=request.data.get("user_id")).first()
     if user is None:
         return {'status': "user not found"}
     else:
@@ -54,7 +54,7 @@ def accept_follow_request(view, request, pk=None):
 
 def reject_follow_request(view, request):
     page = view.get_object()
-    user = page.follow_requests.all().filter(pk=request.data.get("user_id")).first()
+    user = page.follow_requests.filter(pk=request.data.get("user_id")).first()
     if user is None:
         return {'status': "user no found"}
     else:

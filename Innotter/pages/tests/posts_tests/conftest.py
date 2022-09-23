@@ -1,7 +1,8 @@
 import pytest
+from model_bakery import baker
+
 from pages.models import Post
 from pages.tests.pages_tests.conftest import page
-from model_bakery import baker
 
 
 @pytest.fixture
