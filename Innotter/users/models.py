@@ -13,3 +13,6 @@ class User(AbstractUser):
     role = models.CharField(max_length=9, choices=Roles.choices, default=Roles.USER)
     title = models.CharField(max_length=80, default="User")
     is_blocked = models.BooleanField(default=False)
+    favourite_posts = models.ManyToManyField(
+        "pages.Post", related_name="favourites", blank=True
+    )

@@ -1,3 +1,5 @@
+from datetime import datetime
+import pytz
 from django.db import models
 
 
@@ -20,6 +22,13 @@ class Page(models.Model):
         "users.User", related_name="requests", blank=True
     )
     unblock_date = models.DateTimeField(null=True, blank=True)
+    is_permamently_blocked = models.BooleanField(default=False)
+    blacklisted_users = models.ManyToManyField(
+        "users.User", related_name="blacklisted", blank=True
+    )
+
+    def is_blocked_atm(self):
+        return not (self.unblock_date is None or pytz.UTC.localize(datetime.utcnow()) > self.unblock_date)
 
 
 class Post(models.Model):

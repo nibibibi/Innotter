@@ -1,5 +1,7 @@
 #!/bin/bash
 
-python Innotter/manage.py makemigrations
-python Innotter/manage.py migrate
-python Innotter/manage.py runserver 0.0.0.0:8000
+cd Innotter
+pytest
+python manage.py makemigrations
+python manage.py migrate
+python manage.py runserver 0.0.0.0:8000

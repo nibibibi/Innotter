@@ -30,4 +30,4 @@ class JWTAuthentication(BaseAuthentication):
         if user.is_blocked:
             raise exceptions.AuthenticationFailed("User is blocked.")
 
-        return (user, None)
+        return user, None
