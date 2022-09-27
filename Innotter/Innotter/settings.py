@@ -12,8 +12,11 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 
 
 import os
+from . import secrets
 import sys
 from pathlib import Path
+
+from Innotter.Innotter.secrets import SES_ACCESS_KEY_ID, SES_SECRET_ACCESS_KEY
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -58,6 +61,10 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+EMAIL_BACKEND = 'django_ses.SESBackend'
+AWS_ACCESS_KEY_ID = secrets.SES_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY = secrets.SES_SECRET_ACCESS_KEY
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_WHITELIST = ["http://*"]
