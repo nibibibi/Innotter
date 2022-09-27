@@ -18,15 +18,9 @@ from pathlib import Path
 
 from Innotter.Innotter.secrets import SES_ACCESS_KEY_ID, SES_SECRET_ACCESS_KEY
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure--s*8gg=v&!+di@*(3i)ukc$6qvs%&gzv%nmy1whl51y@ls2fw3"
+SECRET_KEY = secrets.DJNAGO_SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
